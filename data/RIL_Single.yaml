@@ -1,0 +1,14 @@
+# Data for 165 RIL_Single in Single Site:
+crosstype: riself
+geno: RIL_Single_gen.csv
+pheno: RIL_Single_phe.csv
+gmap: RIL_Single_gmap.csv
+alleles:
+- A
+- B
+genotypes:
+ A: 1
+ B: 2
+na.strings:
+ - '-'
+ - NA
