@@ -32,7 +32,7 @@ out_reduced = scan1(pr_multiple, cross2$pheno, kinship_loco_multiple,addcovar = 
 perm_reduced <- scan1perm(pr_multiple, cross2$pheno, kinship_loco_multiple, addcovar = covar_matrix,
                            n_perm=1000, perm_strata = covar, cores = 3)
 
-save(out_full, perm_full, out_reduced, perm_reduced,'scan1Results.RData')
+save(out_full, perm_full, out_reduced, perm_reduced, file='scan1Results.RData')
 
 ###Get the threshold value and test GXE
 gxe = out_full - out_reduced
