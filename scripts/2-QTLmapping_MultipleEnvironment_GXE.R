@@ -23,12 +23,14 @@ covar = as.matrix(covar)
 ###full model: G + E + GXE, for all traits
 out_full = scan1(pr_multiple, cross2$pheno, kinship_loco_multiple,addcovar = covar_matrix,intcovar = covar_matrix, cores = 2)
 ###permutation test with stratifier of covariates
+set.seed(1234)
 perm_full = scan1perm(pr_multiple, cross2$pheno, kinship_loco_multiple, addcovar = covar_matrix,
                        intcovar = covar_matrix,n_perm=1000,perm_strata = covar, core=3)
 
 ###reduced model: G + E
 out_reduced = scan1(pr_multiple, cross2$pheno, kinship_loco_multiple,addcovar = covar_matrix, cores = 2)
 ###permutation test
+set.seed(1234)
 perm_reduced <- scan1perm(pr_multiple, cross2$pheno, kinship_loco_multiple, addcovar = covar_matrix,
                            n_perm=1000, perm_strata = covar, cores = 3)
 
@@ -64,7 +66,7 @@ write.csv(flank_marker_full,'QTLsWithFlankMarkers_full_model.csv') ## for later 
 write.csv(flank_marker_gxe,'QTLsWithFlankMarkers_gxe_model.csv')
 
 #####Plot the QTLs on genetic map
-pdf('../figures/QTLs on Genetic Map.pdf', width = 9,height = 7)
+pdf('../figures/QTLs on Genetic Map.pdf', width = 9,height = 7, onefile = T)
 
 cross = read.cross("csv",file="Brachypodium_RQTL data.csv")
 cols  =  c('darkblue','blue',"green","red","violet")###add your colors depending on how many traits you have
@@ -78,7 +80,19 @@ with(flank_marker_full, segmentsOnMap(cross, phe = lodcolumn, chr = chr,
                                       leg.inset=0.05, legendCex=1,
                                       legendPosition="bottomright")
 )
-#mtext('QTL summary',side = 3)
+mtext('QTL Summary from the Full Model',side = 3)
+
+with(flank_marker_gxe, segmentsOnMap(cross, phe = lodcolumn, chr = chr,
+                                      l = ci_lo, h = ci_hi,
+                                      peaklod = lod, peakcM = pos,
+                                      showPeaks = TRUE,
+                                      chrBuffer = c(0.15,0.1),
+                                      tick.width=0.05, lwd=2,
+                                      col=cols,
+                                      leg.inset=0.05, legendCex=1,
+                                      legendPosition="bottomright")
+)
+mtext('QTL Summary from the G x E Model',side = 3)
 dev.off()
 
 ###plotting in diffrent ways
@@ -92,9 +106,9 @@ for (i in 1:5){
 plot(out_full, lodcolumn = i, map, col='red', ylim=c(0,ymx+0.2))
 plot(out_reduced,lodcolumn = i, map, col='blue',add=T)
 plot(gxe,lodcolumn = i, map, col='green',add=T)
-abline(h =threshold_full, col='red')
-abline(h =threshold_reduced, col='blue')
-abline(h =threshold_gxe, col='green')
+abline(h =threshold_full[i], col='red', lty=2)
+abline(h =threshold_reduced[i], col='blue', lty=2)
+abline(h =threshold_gxe[i], col='green', lty=2)
 legend("topleft",legend = colnames(out_full)[i],bty = "n")
 }
 mtext("LOD Score", side = 2, outer = T, line = 1.5)
@@ -111,24 +125,26 @@ par(mfrow=c(2,1),oma = c(5,4,4,0) + 0.1,
 cols = c("darkblue","blue", "violetred","red","green" ) ###pick your color..
 
 plot(out_full, map, lodcolumn = 1, col=cols[1], ylim= c(0,ymx+0.2), lty=1)
+abline(h=threshold_full[1], col=cols[1], lty=2)
 
 for (i in 2:(ncol(out_full))){
-  plot(out_full, map, lodcolumn = i, col=cols[i], add=T, lty=i)
+  plot(out_full, map, lodcolumn = i, col=cols[i], add=T)
+  abline(h=threshold_full[i], col=cols[i], lty=2)
 }
 legend('topleft',"Full Model", bty="n")
 
-###plot the GXE model
-plot(out_reduced, map, lodcolumn = 1, col=cols[1], ylim= c(0,ymx+0.2), lty=1)
+plot(gxe, map, lodcolumn = 1, col=cols[1], ylim= c(0,ymx+0.2), lty=1)
+abline(h=threshold_gxe[1], col=cols[1], lty=2)
 
-for (i in 2:(ncol(out_reduced))){
-  plot(out_reduced, map, lodcolumn = i, col=cols[i], add=T, lty=i)
+for (i in 2:(ncol(gxe))){
+  plot(gxe, map, lodcolumn = i, col=cols[i], add=T)
+  abline(h=threshold_gxe[i], col=cols[i], lty=2)
 }
 legend('topleft',"G x E Model", bty = "n")
 
 mtext("LOD Score", side = 2, outer = T, line = 1.5)
 legend(x=200,y=-0.5, legend=colnames(out_full),cex = 1.5,
-       lty = 1:5,lwd=2, col = cols, bty="n", xpd=NA,  ncol = 3)
-
+       lwd=2, col = cols, bty="n", xpd=NA,  ncol = 3)
 dev.off()
 ####END
 
